@@ -14,7 +14,7 @@ export default function ClubsPage() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingClub, setEditingClub] = useState<Club | null>(null);
+  const [editingClub, setEditingClub] = useState<Club | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [leagueFilter, setLeagueFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -76,7 +76,7 @@ export default function ClubsPage() {
       });
       
       setShowForm(false);
-      setEditingClub(null);
+      setEditingClub(undefined);
       fetchClubs();
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -134,7 +134,7 @@ export default function ClubsPage() {
 
   const handleCloseModal = () => {
     setShowForm(false);
-    setEditingClub(null);
+    setEditingClub(undefined);
   };
 
   const handleCloseDeleteModal = () => {
@@ -330,7 +330,7 @@ export default function ClubsPage() {
         <ClubModal
           isOpen={showForm}
           onClose={handleCloseModal}
-          onSubmit={handleSubmit}
+          onSave={handleSubmit}
           club={editingClub}
           leagues={leagues}
           isSubmitting={isSubmitting}

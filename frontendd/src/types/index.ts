@@ -39,7 +39,7 @@ export interface League {
   region?: string;
 }
 
-// Club types
+// Club types - Updated with comprehensive fields
 export interface Club {
   id: number;
   name: string;
@@ -56,9 +56,46 @@ export interface Club {
   league?: League;
   members?: Member[];
   members_count?: number;
+  
+  // Additional comprehensive club fields
+  ruc?: string;
+  country?: string;
+  province?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  description?: string;
+  founded_date?: string;
+  
+  // Club statistics
+  number_of_tables?: number;
+  can_create_tournaments?: boolean;
+  
+  // Representative information
+  representative_name?: string;
+  representative_phone?: string;
+  representative_email?: string;
+  
+  // Administrator 1
+  admin1_name?: string;
+  admin1_phone?: string;
+  admin1_email?: string;
+  
+  // Administrator 2
+  admin2_name?: string;
+  admin2_phone?: string;
+  admin2_email?: string;
+  
+  // Administrator 3
+  admin3_name?: string;
+  admin3_phone?: string;
+  admin3_email?: string;
+  
+  // Logo
+  logo_path?: string;
 }
 
-// Member types
+// Member types - Updated with comprehensive table tennis information
 export interface Member {
   id: number;
   name: string;
@@ -77,7 +114,229 @@ export interface Member {
   last_name?: string;
   full_name?: string;
   doc_id?: string;
+  
+  // Location information
+  country?: string;
+  province?: string;
+  city?: string;
+  
+  // Playing style information
+  dominant_hand?: 'right' | 'left';
+  playing_side?: 'derecho' | 'zurdo';
+  playing_style?: 'clasico' | 'lapicero';
+  
+  // Racket information
+  racket_brand?: string;
+  racket_model?: string;
+  racket_custom_brand?: string;
+  racket_custom_model?: string;
+  
+  // Drive rubber information
+  drive_rubber_brand?: string;
+  drive_rubber_model?: string;
+  drive_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  drive_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  drive_rubber_sponge?: string;
+  drive_rubber_hardness?: string;
+  drive_rubber_custom_brand?: string;
+  drive_rubber_custom_model?: string;
+  
+  // Backhand rubber information
+  backhand_rubber_brand?: string;
+  backhand_rubber_model?: string;
+  backhand_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  backhand_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  backhand_rubber_sponge?: string;
+  backhand_rubber_hardness?: string;
+  backhand_rubber_custom_brand?: string;
+  backhand_rubber_custom_model?: string;
+  
+  // Additional information
+  notes?: string;
+  ranking_position?: number;
+  ranking_last_updated?: string;
+  photo_path?: string;
+  
+  // Computed attributes
+  age?: number;
+  equipment_summary?: EquipmentSummary;
+  playing_style_summary?: PlayingStyleSummary;
+  location_summary?: LocationSummary;
 }
+
+// Equipment related interfaces
+export interface EquipmentSummary {
+  racket: {
+    brand?: string;
+    model?: string;
+  };
+  drive_rubber: {
+    brand?: string;
+    model?: string;
+    type?: string;
+    color?: string;
+    sponge?: string;
+    hardness?: string;
+  };
+  backhand_rubber: {
+    brand?: string;
+    model?: string;
+    type?: string;
+    color?: string;
+    sponge?: string;
+    hardness?: string;
+  };
+}
+
+export interface PlayingStyleSummary {
+  dominant_hand?: string;
+  playing_side?: string;
+  playing_style?: string;
+}
+
+export interface LocationSummary {
+  country?: string;
+  province?: string;
+  city?: string;
+}
+
+// Equipment reference interfaces
+export interface RacketBrand {
+  id: number;
+  name: string;
+  country?: string;
+  is_active: boolean;
+  models?: RacketModel[];
+}
+
+export interface RacketModel {
+  id: number;
+  brand_id: number;
+  name: string;
+  type?: string;
+  speed?: number;
+  control?: number;
+  weight?: number;
+  is_active: boolean;
+  brand?: RacketBrand;
+}
+
+export interface RubberBrand {
+  id: number;
+  name: string;
+  country?: string;
+  is_active: boolean;
+  models?: RubberModel[];
+}
+
+export interface RubberModel {
+  id: number;
+  brand_id: number;
+  name: string;
+  type: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  speed?: number;
+  spin?: number;
+  control?: number;
+  available_colors?: string[];
+  available_sponges?: string[];
+  available_hardness?: string[];
+  is_active: boolean;
+  brand?: RubberBrand;
+}
+
+export interface EcuadorLocation {
+  id: number;
+  province: string;
+  city: string;
+  is_active: boolean;
+}
+
+export interface TTClubReference {
+  id: number;
+  name: string;
+  city: string;
+  province: string;
+  federation?: string;
+  is_active: boolean;
+}
+
+// Updated form types
+export interface MemberForm {
+  // Basic information
+  club_id: number;
+  first_name: string;
+  last_name: string;
+  doc_id?: string;
+  email?: string;
+  phone?: string;
+  birth_date?: string;
+  gender?: 'male' | 'female' | 'other';
+  status: 'active' | 'inactive';
+  
+  // Location information
+  country?: string;
+  province?: string;
+  city?: string;
+  
+  // Playing style information
+  dominant_hand?: 'right' | 'left';
+  playing_side?: 'derecho' | 'zurdo';
+  playing_style?: 'clasico' | 'lapicero';
+  
+  // Racket information
+  racket_brand?: string;
+  racket_model?: string;
+  racket_custom_brand?: string;
+  racket_custom_model?: string;
+  
+  // Drive rubber information
+  drive_rubber_brand?: string;
+  drive_rubber_model?: string;
+  drive_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  drive_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  drive_rubber_sponge?: string;
+  drive_rubber_hardness?: string;
+  drive_rubber_custom_brand?: string;
+  drive_rubber_custom_model?: string;
+  
+  // Backhand rubber information
+  backhand_rubber_brand?: string;
+  backhand_rubber_model?: string;
+  backhand_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  backhand_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  backhand_rubber_sponge?: string;
+  backhand_rubber_hardness?: string;
+  backhand_rubber_custom_brand?: string;
+  backhand_rubber_custom_model?: string;
+  
+  // Additional information
+  notes?: string;
+  ranking_position?: number;
+  ranking_last_updated?: string;
+  photo_path?: string;
+}
+
+// Constants for dropdown options
+export const RUBBER_COLORS = [
+  'negro', 'rojo', 'verde', 'azul', 'amarillo', 'morado', 'fucsia'
+] as const;
+
+export const RUBBER_TYPES = [
+  'liso', 'pupo_largo', 'pupo_corto', 'antitopspin'
+] as const;
+
+export const SPONGE_THICKNESSES = [
+  '0.5', '0.7', '1.5', '1.6', '1.8', '1.9', '2', '2.1', '2.2', 'sin esponja'
+] as const;
+
+export const HARDNESS_LEVELS = [
+  'h42', 'h44', 'h46', 'h48', 'h50', 'n/a'
+] as const;
+
+export const POPULAR_BRANDS = [
+  'Butterfly', 'DHS', 'Sanwei', 'Nittaku', 'Yasaka', 'Stiga', 
+  'Victas', 'Joola', 'Xiom', 'Saviga', 'Friendship', 'Dr. Neubauer'
+] as const;
 
 // Sport types
 export interface Sport {
@@ -245,13 +504,57 @@ export interface ClubForm {
 }
 
 export interface MemberForm {
-  name: string;
-  email: string;
+  club_id: number;
+  first_name: string;
+  last_name: string;
+  doc_id?: string;
+  email?: string;
   phone?: string;
   birth_date?: string;
   gender?: 'male' | 'female' | 'other';
   status: 'active' | 'inactive';
-  club_id: number;
+  
+  // Location information
+  country?: string;
+  province?: string;
+  city?: string;
+  
+  // Playing style information
+  dominant_hand?: 'right' | 'left';
+  playing_side?: 'derecho' | 'zurdo';
+  playing_style?: 'clasico' | 'lapicero';
+  
+  // Racket information
+  racket_brand?: string;
+  racket_model?: string;
+  racket_custom_brand?: string;
+  racket_custom_model?: string;
+  
+  // Drive rubber information
+  drive_rubber_brand?: string;
+  drive_rubber_model?: string;
+  drive_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  drive_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  drive_rubber_sponge?: string;
+  drive_rubber_hardness?: string;
+  drive_rubber_custom_brand?: string;
+  drive_rubber_custom_model?: string;
+  
+  // Backhand rubber information
+  backhand_rubber_brand?: string;
+  backhand_rubber_model?: string;
+  backhand_rubber_type?: 'liso' | 'pupo_largo' | 'pupo_corto' | 'antitopspin';
+  backhand_rubber_color?: 'negro' | 'rojo' | 'verde' | 'azul' | 'amarillo' | 'morado' | 'fucsia';
+  backhand_rubber_sponge?: string;
+  backhand_rubber_hardness?: string;
+  backhand_rubber_custom_brand?: string;
+  backhand_rubber_custom_model?: string;
+  
+  // Additional information
+  notes?: string;
+  ranking_position?: number;
+  ranking_last_updated?: string;
+  photo_path?: string;
 }
 
 export interface SportForm {
