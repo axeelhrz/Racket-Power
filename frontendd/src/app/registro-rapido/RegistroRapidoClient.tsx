@@ -15,6 +15,7 @@ import AuthHeader from '@/components/auth/AuthHeader';
 import CustomBrandHelper from '@/components/ui/CustomBrandHelper';
 import axios from '@/lib/axios';
 import { isAxiosError } from 'axios';
+import { testApiConnection, testRegistroRapido } from '@/utils/testApiConnection';
 
 const registroRapidoSchema = z.object({
   // Información personal básica
@@ -31,9 +32,8 @@ const registroRapidoSchema = z.object({
   province: z.string().min(1, 'Por favor selecciona una provincia'),
   city: z.string().min(1, 'Por favor selecciona una ciudad'),
   
-  // Club y federación
+  // Club (sin federación)
   club_name: z.string().optional(),
-  federation: z.string().optional(),
   
   // Estilo de juego
   playing_side: z.enum(['derecho', 'zurdo']).optional(),
@@ -48,7 +48,7 @@ const registroRapidoSchema = z.object({
   // Caucho del drive
   drive_rubber_brand: z.string().optional(),
   drive_rubber_model: z.string().optional(),
-  drive_rubber_type: z.enum(['liso', 'pupo_largo', 'pupo_corto', 'antitopspin']).optional(),
+  drive_rubber_type: z.enum(['liso', 'pupo_largo', 'pupo_corto', 'antitopsping']).optional(),
   drive_rubber_color: z.enum(['negro', 'rojo', 'verde', 'azul', 'amarillo', 'morado', 'fucsia']).optional(),
   drive_rubber_sponge: z.string().optional(),
   drive_rubber_hardness: z.string().optional(),
@@ -58,7 +58,7 @@ const registroRapidoSchema = z.object({
   // Caucho del back
   backhand_rubber_brand: z.string().optional(),
   backhand_rubber_model: z.string().optional(),
-  backhand_rubber_type: z.enum(['liso', 'pupo_largo', 'pupo_corto', 'antitopspin']).optional(),
+  backhand_rubber_type: z.enum(['liso', 'pupo_largo', 'pupo_corto', 'antitopsping']).optional(),
   backhand_rubber_color: z.enum(['negro', 'rojo', 'verde', 'azul', 'amarillo', 'morado', 'fucsia']).optional(),
   backhand_rubber_sponge: z.string().optional(),
   backhand_rubber_hardness: z.string().optional(),
@@ -92,45 +92,59 @@ const ECUADOR_PROVINCES = [
   { name: 'Esmeraldas', cities: ['Esmeraldas', 'Atacames', 'Muisne', 'Quinindé', 'San Lorenzo'] },
 ];
 
+// Updated club list as requested
 const TT_CLUBS_ECUADOR = [
-  { name: 'PPH Cuenca', federation: 'Fede Guayas' },
-  { name: 'Ping Pro', federation: 'Fede Guayas' },
-  { name: 'Billy Team', federation: 'Fede Guayas' },
-  { name: 'Independiente', federation: 'Fede Guayas' },
-  { name: 'BackSpin', federation: 'Fede Guayas' },
-  { name: 'Spin Factor', federation: 'Fede - Manabí' },
-  { name: 'Spin Zone', federation: 'Fede Tungurahua' },
-  { name: 'TM - Manta', federation: 'Fede - Manabí' },
-  { name: 'Primorac', federation: 'Fede Pichincha' },
-  { name: 'TT Quevedo', federation: 'Fede Los Ríos' },
-  { name: 'Fede Santa Elena', federation: 'Fede Santa Elena' },
-  { name: 'Ranking Uartes', federation: 'Fede Galápagos' },
-  { name: 'Guayaquil City', federation: 'Fede Guayas' },
-  { name: 'Buena Fe', federation: 'Fede Guayas' },
-  { name: 'Milagro', federation: 'Fede Guayas' },
-  { name: 'Ping Pong Rick', federation: 'Fede Guayas' },
-  { name: 'Ranking Liga 593', federation: 'LATEM' },
+  'PPH',
+  'Cuenca',
+  'Fede Guayas',
+  'Ping Pro',
+  'Billy Team',
+  'Independiente',
+  'BackSping',
+  'Spin Factor',
+  'Fede - Manabi',
+  'Spin Zone',
+  'Ambato',
+  'TM - Manta',
+  'Primorac',
+  'Quito',
+  'TT Quevedo',
+  'Fede Santa Elena',
+  'Uartes',
+  'Galapagos',
+  'Guayaquil City',
+  'Buena Fe',
+  'Milagro',
+  'Ping Pong Rick'
 ];
 
+// Updated brands list with Hurricane and Yinhe
 const POPULAR_BRANDS = [
   'Butterfly', 'DHS', 'Sanwei', 'Nittaku', 'Yasaka', 'Stiga', 
-  'Victas', 'Joola', 'Xiom', 'Saviga', 'Friendship', 'Dr. Neubauer', 'Double Fish'
+  'Victas', 'Joola', 'Xiom', 'Saviga', 'Friendship', 'Dr. Neubauer', 
+  'Double Fish', 'Hurricane', 'Yinhe'
 ];
 
 const RUBBER_COLORS = ['negro', 'rojo', 'verde', 'azul', 'amarillo', 'morado', 'fucsia'];
+
+// Updated rubber types with corrected name
 const RUBBER_TYPES = [
   { value: 'liso', label: 'Liso' },
   { value: 'pupo_largo', label: 'Pupo Largo' },
   { value: 'pupo_corto', label: 'Pupo Corto' },
-  { value: 'antitopspin', label: 'Antitopspin' }
+  { value: 'antitopsping', label: 'Antitopsping' }
 ];
+
 const HARDNESS_LEVELS = ['h42', 'h44', 'h46', 'h48', 'h50'];
-const SPONGE_THICKNESSES = ['sin esponja', '1.0', '1.5', '1.8', '2.0', 'max'];
+
+// Updated sponge thickness options as requested
+const SPONGE_THICKNESSES = ['0,5', '0,7', '1,5', '1,6', '1,8', '1,9', '2', '2,1', '2,2', 'sin esponja'];
 
 // Tipos fuertes para los campos de marcas/modelos
 type BrandFieldName = 'racket_brand' | 'drive_rubber_brand' | 'backhand_rubber_brand';
 type CustomBrandFieldName = 'racket_custom_brand' | 'drive_rubber_custom_brand' | 'backhand_rubber_custom_brand';
 type CustomModelFieldName = 'racket_custom_model' | 'drive_rubber_custom_model' | 'backhand_rubber_custom_model';
+
 // Componente para campos personalizados mejorado
 const CustomBrandFields: React.FC<{
   show: boolean;
@@ -305,16 +319,7 @@ const RegistroRapidoClient: React.FC = () => {
   });
 
   const watchedProvince = watch('province');
-  const watchedClubName = watch('club_name');
   const selectedProvince = ECUADOR_PROVINCES.find(p => p.name === watchedProvince);
-  const selectedClub = TT_CLUBS_ECUADOR.find(c => c.name === watchedClubName);
-
-  // Auto-set federation when club is selected
-  React.useEffect(() => {
-    if (selectedClub) {
-      setValue('federation', selectedClub.federation);
-    }
-  }, [selectedClub, setValue]);
 
   // Handle photo selection
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -329,15 +334,44 @@ const RegistroRapidoClient: React.FC = () => {
     }
   };
 
+  // Función de debugging para probar la API
+  const handleTestApi = async () => {
+    console.log('🧪 Testing API connection...');
+    const result = await testApiConnection();
+    console.log('API Test Result:', result);
+    
+    if (result && result.success) {
+      alert('✅ API connection successful! Check console for details.');
+    } else {
+      const message = result?.error?.message ?? 'Unknown error';
+      alert(`❌ API connection failed: ${message}`);
+    }
+  };
+  const handleTestRegistro = async () => {
+    console.log('🧪 Testing registro-rapido endpoint...');
+    const result = await testRegistroRapido();
+    console.log('Registro Test Result:', result);
+    
+    if (result && result.success) {
+      alert('✅ Registro endpoint working! Check console for details.');
+    } else {
+      const message = result?.error?.message ?? 'Unknown error';
+      alert(`❌ Registro endpoint failed: ${message}`);
+    }
+  };
+
   const onSubmit = async (data: RegistroRapidoFormValues) => {
     setIsSubmitting(true);
     try {
+      console.log('📝 Form data being submitted:', data);
+      
       const formData = new FormData();
       
       // Add all form data
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
           formData.append(key, String(value));
+          console.log(`📋 Adding to FormData: ${key} = ${value}`);
         }
       });
 
@@ -357,12 +391,20 @@ const RegistroRapidoClient: React.FC = () => {
         }
 
         formData.append('photo', selectedPhoto);
+        console.log('📸 Photo added to FormData:', selectedPhoto.name, selectedPhoto.size);
       }
 
+      console.log('🚀 Sending request to /api/registro-rapido...');
+      
       // Send to API
       const response = await axios.post('/api/registro-rapido', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
+        },
       });
+
+      console.log('✅ Response received:', response.data);
 
       // Extract registration data from response
       const responseData = response.data;
@@ -380,9 +422,17 @@ const RegistroRapidoClient: React.FC = () => {
       
       setIsSuccess(true);
     } catch (error: unknown) {
-      console.error('Error en registro rápido:', error);
+      console.error('❌ Error en registro rápido:', error);
 
       if (isAxiosError(error)) {
+        console.error('📊 Error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          method: error.config?.method
+        });
+
         const status = error.response?.status;
         if (status === 422) {
           const data = error.response?.data as unknown;
@@ -548,6 +598,27 @@ const RegistroRapidoClient: React.FC = () => {
                 subtitle="593 Liga Amateur de Tenis de Mesa (LATEM)"
               />
             </motion.div>
+
+            {/* Debug buttons - Solo en desarrollo */}
+            {process.env.NODE_ENV === 'development' && (
+              <motion.div variants={itemVariants} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                <h3 className="text-sm font-semibold text-yellow-800 mb-2">🧪 Debug Tools</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTestApi}
+                    className="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
+                  >
+                    Test API Connection
+                  </button>
+                  <button
+                    onClick={handleTestRegistro}
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                  >
+                    Test Registro Endpoint
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
             <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-xl p-8 mt-8">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -771,40 +842,26 @@ const RegistroRapidoClient: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Club y Federación */}
+                {/* Club (sin federación) */}
                 <div className="space-y-6">
                   <h3 className={sectionTitleStyles}>
-                    Club y Federación
+                    Club
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="club_name" className={labelStyles}>Club</label>
-                      <select
-                        {...register('club_name')}
-                        id="club_name"
-                        className={`${inputStyles} ${inputNormalStyles}`}
-                      >
-                        <option value="">Seleccionar club</option>
-                        {TT_CLUBS_ECUADOR.map((club) => (
-                          <option key={club.name} value={club.name}>
-                            {club.name}
-                          </option>
-                        ))}
-                        <option value="otro">Otro (no listado)</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="federation" className={labelStyles}>Federación</label>
-                      <input
-                        {...register('federation')}
-                        type="text"
-                        id="federation"
-                        placeholder="Fede Guayas"
-                        className={`${inputStyles} ${inputNormalStyles}`}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label htmlFor="club_name" className={labelStyles}>Club</label>
+                    <select
+                      {...register('club_name')}
+                      id="club_name"
+                      className={`${inputStyles} ${inputNormalStyles}`}
+                    >
+                      <option value="">Seleccionar club</option>
+                      {TT_CLUBS_ECUADOR.map((club) => (
+                        <option key={club} value={club}>
+                          {club}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -970,7 +1027,7 @@ const RegistroRapidoClient: React.FC = () => {
                         <option value="">Seleccionar esponja</option>
                         {SPONGE_THICKNESSES.map((thickness) => (
                           <option key={thickness} value={thickness}>
-                            {thickness} {thickness !== 'sin esponja' && 'mm'}
+                            {thickness === 'sin esponja' ? thickness : `${thickness} mm`}
                           </option>
                         ))}
                       </select>
@@ -1075,7 +1132,7 @@ const RegistroRapidoClient: React.FC = () => {
                         <option value="">Seleccionar esponja</option>
                         {SPONGE_THICKNESSES.map((thickness) => (
                           <option key={thickness} value={thickness}>
-                            {thickness} {thickness !== 'sin esponja' && 'mm'}
+                            {thickness === 'sin esponja' ? thickness : `${thickness} mm`}
                           </option>
                         ))}
                       </select>
