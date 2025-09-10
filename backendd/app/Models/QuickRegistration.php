@@ -13,7 +13,9 @@ class QuickRegistration extends Model
     protected $fillable = [
         'registration_code',
         'first_name',
+        'second_name',
         'last_name',
+        'second_last_name',
         'doc_id',
         'email',
         'phone',
@@ -22,7 +24,10 @@ class QuickRegistration extends Model
         'country',
         'province',
         'city',
+        'league',
         'club_name',
+        'club_role',
+        'ranking',
         'federation',
         'playing_side',
         'playing_style',
@@ -88,11 +93,18 @@ class QuickRegistration extends Model
     }
 
     /**
-     * Get the person's full name.
+     * Get the person's full name with support for split names.
      */
     public function getFullNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        $names = array_filter([
+            $this->first_name,
+            $this->second_name,
+            $this->last_name,
+            $this->second_last_name
+        ]);
+        
+        return implode(' ', $names);
     }
 
     /**
@@ -350,5 +362,30 @@ class QuickRegistration extends Model
             $summary .= ' - ' . $this->federation;
         }
         return $summary;
+    }
+
+    /**
+     * Get club role label.
+     */
+    public function getClubRoleLabelAttribute(): string
+    {
+        return match($this->club_role) {
+            'administrador' => 'Administrador del Club',
+            'dueño' => 'Dueño del Club',
+            'ninguno' => 'Ninguno',
+            default => 'No especificado',
+        };
+    }
+
+    /**
+     * Get club information with role.
+     */
+    public function getClubInfoAttribute(): array
+    {
+        return [
+            'name' => $this->club_name,
+            'role' => $this->club_role,
+            'role_label' => $this->club_role_label,
+        ];
     }
 }

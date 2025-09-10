@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { Member, Club } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 const memberSchema = z.object({
   // Basic information
@@ -81,9 +82,10 @@ const RUBBER_TYPES = [
 const SPONGE_THICKNESSES = ['0,5', '0,7', '1,5', '1,6', '1,8', '1,9', '2', '2,1', '2,2', 'sin esponja'];
 
 const POPULAR_BRANDS = [
-  'Butterfly', 'DHS', 'Sanwei', 'Nittaku', 'Yasaka', 'Stiga', 
-  'Victas', 'Joola', 'Xiom', 'Saviga', 'Friendship', 'Dr. Neubauer', 
-  'Double Fish', 'Hurricane', 'Yinhe'
+  'Andro', 'Avalox', 'Butterfly', 'Cornilleau', 'DHS', 'Donic', 'Double Fish', 
+  'Dr. Neubauer', 'Friendship', 'Gewo', 'Hurricane', 'Joola', 'Killerspin', 
+  'Nittaku', 'Palio', 'Sanwei', 'Saviga', 'Stiga', 'TSP', 
+  'Tibhar', 'Victas', 'Xiom', 'Yasaka', 'Yinhe'
 ];
 
 const RUBBER_COLORS = ['negro', 'rojo', 'verde', 'azul', 'amarillo', 'morado', 'fucsia'];
@@ -110,6 +112,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   clubs,
   isSubmitting = false
 }) => {
+  const { user } = useAuth();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -132,6 +135,10 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
   const watchedProvince = watch('province');
   const selectedProvince = ECUADOR_PROVINCES.find(p => p.name === watchedProvince);
+
+  // Check if current user can create members (only super_admin can)
+  const canCreateMembers = user?.role === 'super_admin';
+  const isEditMode = !!member;
 
   useEffect(() => {
     if (member) {
@@ -223,7 +230,8 @@ const MemberModal: React.FC<MemberModalProps> = ({
   const labelStyles = "block text-sm font-bold text-gray-800 mb-2";
   const sectionTitleStyles = "text-xl font-bold text-gray-900 border-b-2 border-blue-300 pb-3 mb-6";
 
-  if (!isOpen) return null;
+  // Don't show modal if user doesn't have permission to create and it's not edit mode
+  if (!isOpen || (!canCreateMembers && !isEditMode)) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -243,6 +251,11 @@ const MemberModal: React.FC<MemberModalProps> = ({
               <p className="text-blue-100 mt-1">
                 Paso {currentStep} de {totalSteps}
               </p>
+              {!canCreateMembers && !isEditMode && (
+                <p className="text-yellow-200 text-sm mt-2">
+                  ⚠️ Solo puedes editar miembros existentes
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}
@@ -417,7 +430,8 @@ const MemberModal: React.FC<MemberModalProps> = ({
                     <select
                       {...register('club_id', { valueAsNumber: true })}
                       id="club_id"
-                      className={`${inputStyles} ${errors.club_id ? inputErrorStyles : inputNormalStyles}`}
+                      disabled={user?.role === 'club' && clubs.length === 1}
+                      className={`${inputStyles} ${errors.club_id ? inputErrorStyles : inputNormalStyles} ${user?.role === 'club' && clubs.length === 1 ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     >
                       <option value="">Seleccionar club</option>
                       {clubs.map((club) => (
@@ -577,7 +591,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="racket_model" className={labelStyles}>Modelo                      </label>
+                      <label htmlFor="racket_model" className={labelStyles}>Modelo</label>
                       <input
                         {...register('racket_model')}
                         type="text"
@@ -978,4 +992,3 @@ const MemberModal: React.FC<MemberModalProps> = ({
 };
 
 export default MemberModal;
-

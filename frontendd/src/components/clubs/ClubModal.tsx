@@ -18,9 +18,6 @@ const clubSchema = z.object({
   description: z.string().optional(),
   founded_date: z.string().optional(),
   
-  // Club statistics
-  can_create_tournaments: z.boolean().optional(),
-  
   // Representative information
   representative_name: z.string().optional(),
   representative_phone: z.string().optional(),
@@ -92,7 +89,6 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
       google_maps_url: '',
       description: '',
       founded_date: '',
-      can_create_tournaments: false,
       representative_name: '',
       representative_phone: '',
       representative_email: '',
@@ -111,46 +107,107 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
   const watchedProvince = watch('province');
   const selectedProvince = ECUADOR_PROVINCES.find(p => p.name === watchedProvince);
 
+  // Reset form completely when modal opens/closes or club changes
   useEffect(() => {
-    if (club) {
-      reset({
-        league_id: club.league_id?.toString() || '',
-        name: club.name || '',
-        ruc: club.ruc || '',
-        country: club.country || 'Ecuador',
-        province: club.province || '',
-        city: club.city || '',
-        address: club.address || '',
-        google_maps_url: club.google_maps_url || '',
-        description: club.description || '',
-        founded_date: club.founded_date || '',
-        can_create_tournaments: club.can_create_tournaments || false,
-        representative_name: club.representative_name || '',
-        representative_phone: club.representative_phone || '',
-        representative_email: club.representative_email || '',
-        admin1_name: club.admin1_name || '',
-        admin1_phone: club.admin1_phone || '',
-        admin1_email: club.admin1_email || '',
-        admin2_name: club.admin2_name || '',
-        admin2_phone: club.admin2_phone || '',
-        admin2_email: club.admin2_email || '',
-        admin3_name: club.admin3_name || '',
-        admin3_phone: club.admin3_phone || '',
-        admin3_email: club.admin3_email || '',
-      });
-      
-      if (club.logo_path) {
-        setLogoPreview(`/storage/${club.logo_path}`);
+    if (isOpen) {
+      if (club) {
+        // Editing existing club
+        reset({
+          league_id: club.league_id?.toString() || '',
+          name: club.name || '',
+          ruc: club.ruc || '',
+          country: club.country || 'Ecuador',
+          province: club.province || '',
+          city: club.city || '',
+          address: club.address || '',
+          google_maps_url: club.google_maps_url || '',
+          description: club.description || '',
+          founded_date: club.founded_date || '',
+          representative_name: club.representative_name || '',
+          representative_phone: club.representative_phone || '',
+          representative_email: club.representative_email || '',
+          admin1_name: club.admin1_name || '',
+          admin1_phone: club.admin1_phone || '',
+          admin1_email: club.admin1_email || '',
+          admin2_name: club.admin2_name || '',
+          admin2_phone: club.admin2_phone || '',
+          admin2_email: club.admin2_email || '',
+          admin3_name: club.admin3_name || '',
+          admin3_phone: club.admin3_phone || '',
+          admin3_email: club.admin3_email || '',
+        });
+        
+        if (club.logo_path) {
+          setLogoPreview(`/storage/${club.logo_path}`);
+        } else {
+          setLogoPreview(null);
+        }
+      } else {
+        // Creating new club - reset to default values
+        reset({
+          league_id: '',
+          name: '',
+          ruc: '',
+          country: 'Ecuador',
+          province: '',
+          city: '',
+          address: '',
+          google_maps_url: '',
+          description: '',
+          founded_date: '',
+          representative_name: '',
+          representative_phone: '',
+          representative_email: '',
+          admin1_name: '',
+          admin1_phone: '',
+          admin1_email: '',
+          admin2_name: '',
+          admin2_phone: '',
+          admin2_email: '',
+          admin3_name: '',
+          admin3_phone: '',
+          admin3_email: '',
+        });
+        setLogoPreview(null);
+        setSelectedLogo(null);
       }
-    } else {
+      setCurrentStep(1);
+    }
+  }, [isOpen, club, reset]);
+
+  // Additional cleanup when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form state completely when modal closes
       reset({
+        league_id: '',
+        name: '',
+        ruc: '',
         country: 'Ecuador',
-        can_create_tournaments: false,
+        province: '',
+        city: '',
+        address: '',
+        google_maps_url: '',
+        description: '',
+        founded_date: '',
+        representative_name: '',
+        representative_phone: '',
+        representative_email: '',
+        admin1_name: '',
+        admin1_phone: '',
+        admin1_email: '',
+        admin2_name: '',
+        admin2_phone: '',
+        admin2_email: '',
+        admin3_name: '',
+        admin3_phone: '',
+        admin3_email: '',
       });
       setLogoPreview(null);
+      setSelectedLogo(null);
+      setCurrentStep(1);
     }
-    setCurrentStep(1);
-  }, [club, reset]);
+  }, [isOpen, reset]);
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -165,40 +222,47 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
   };
 
   const onSubmit = async (data: ClubFormValues) => {
-    // Convert the form data to ClubForm format and call the parent's onSave
-    const clubFormData: ClubForm = {
-      // Basic information
-      name: data.name,
-      city: data.city || '',
-      address: data.address,
-      phone: data.representative_phone,
-      email: data.representative_email,
-      status: 'active', // Default status
-      league_id: data.league_id ? parseInt(data.league_id) : undefined,
-      
-      // Additional fields that the backend expects
-      ruc: data.ruc,
-      country: data.country,
-      province: data.province,
-      google_maps_url: data.google_maps_url,
-      description: data.description,
-      founded_date: data.founded_date,
-      can_create_tournaments: data.can_create_tournaments,
-      representative_name: data.representative_name,
-      representative_phone: data.representative_phone,
-      representative_email: data.representative_email,
-      admin1_name: data.admin1_name,
-      admin1_phone: data.admin1_phone,
-      admin1_email: data.admin1_email,
-      admin2_name: data.admin2_name,
-      admin2_phone: data.admin2_phone,
-      admin2_email: data.admin2_email,
-      admin3_name: data.admin3_name,
-      admin3_phone: data.admin3_phone,
-      admin3_email: data.admin3_email,
-    };
+    try {
+      // Convert the form data to ClubForm format and call the parent's onSave
+      const clubFormData: ClubForm = {
+        // Basic information
+        name: data.name,
+        city: data.city || '',
+        address: data.address,
+        phone: data.representative_phone,
+        email: data.representative_email,
+        status: 'active', // Default status
+        league_id: data.league_id ? parseInt(data.league_id) : undefined,
+        
+        // Additional fields that the backend expects
+        ruc: data.ruc,
+        country: data.country,
+        province: data.province,
+        google_maps_url: data.google_maps_url,
+        description: data.description,
+        founded_date: data.founded_date,
+        representative_name: data.representative_name,
+        representative_phone: data.representative_phone,
+        representative_email: data.representative_email,
+        admin1_name: data.admin1_name,
+        admin1_phone: data.admin1_phone,
+        admin1_email: data.admin1_email,
+        admin2_name: data.admin2_name,
+        admin2_phone: data.admin2_phone,
+        admin2_email: data.admin2_email,
+        admin3_name: data.admin3_name,
+        admin3_phone: data.admin3_phone,
+        admin3_email: data.admin3_email,
+      };
 
-    await onSave(clubFormData);
+      await onSave(clubFormData);
+      
+      // The modal will be closed by the parent component
+      // and the form will be reset by the useEffect hooks
+    } catch (error) {
+      // Error handling is done in the parent component
+      console.error('Error in form submission:', error);
+    }
   };
 
   const nextStep = () => {
@@ -211,6 +275,38 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleClose = () => {
+    // Reset form when closing manually
+    reset({
+      league_id: '',
+      name: '',
+      ruc: '',
+      country: 'Ecuador',
+      province: '',
+      city: '',
+      address: '',
+      google_maps_url: '',
+      description: '',
+      founded_date: '',
+      representative_name: '',
+      representative_phone: '',
+      representative_email: '',
+      admin1_name: '',
+      admin1_phone: '',
+      admin1_email: '',
+      admin2_name: '',
+      admin2_phone: '',
+      admin2_email: '',
+      admin3_name: '',
+      admin3_phone: '',
+      admin3_email: '',
+    });
+    setLogoPreview(null);
+    setSelectedLogo(null);
+    setCurrentStep(1);
+    onClose();
   };
 
   const inputStyles = "w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-900 font-medium placeholder-gray-500 bg-white hover:border-gray-400";
@@ -241,7 +337,7 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-white hover:text-gray-200 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,70 +554,194 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
               </motion.div>
             )}
 
-            {/* Step 3: Club Details */}
+            {/* Step 3: Representative */}
             {currentStep === 3 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                <h3 className={sectionTitleStyles}>Detalles del Club</h3>
+                <h3 className={sectionTitleStyles}>Representante</h3>
                 
-                <div className="space-y-2">
-                  <label className={labelStyles}>Permisos</label>
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="representative_name" className={labelStyles}>Nombre</label>
                     <input
-                      {...register('can_create_tournaments')}
-                      type="checkbox"
-                      id="can_create_tournaments"
-                      className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      {...register('representative_name')}
+                      type="text"
+                      id="representative_name"
+                      placeholder="Juan Pérez"
+                      className={`${inputStyles} ${inputNormalStyles}`}
                     />
-                    <label htmlFor="can_create_tournaments" className="text-sm font-medium text-gray-900">
-                      Puede crear torneos por ranking
-                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="representative_phone" className={labelStyles}>Teléfono</label>
+                    <input
+                      {...register('representative_phone')}
+                      type="tel"
+                      id="representative_phone"
+                      placeholder="0999123456"
+                      className={`${inputStyles} ${inputNormalStyles}`}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="representative_email" className={labelStyles}>Email</label>
+                    <input
+                      {...register('representative_email')}
+                      type="email"
+                      id="representative_email"
+                      placeholder="representante@club.com"
+                      className={`${inputStyles} ${errors.representative_email ? inputErrorStyles : inputNormalStyles}`}
+                    />
+                    {errors.representative_email && (
+                      <p className="text-sm text-red-700 font-medium">{errors.representative_email.message}</p>
+                    )}
                   </div>
                 </div>
+              </motion.div>
+            )}
 
-                {/* Representative */}
+            {/* Step 4: Administrators */}
+            {currentStep === 4 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <h3 className={sectionTitleStyles}>Administradores</h3>
+                
+                {/* Administrator 1 */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">
-                    Representante
+                    Administrador 1
                   </h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="representative_name" className={labelStyles}>Nombre</label>
+                      <label htmlFor="admin1_name" className={labelStyles}>Nombre</label>
                       <input
-                        {...register('representative_name')}
+                        {...register('admin1_name')}
                         type="text"
-                        id="representative_name"
-                        placeholder="Juan Pérez"
+                        id="admin1_name"
+                        placeholder="María García"
                         className={`${inputStyles} ${inputNormalStyles}`}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="representative_phone" className={labelStyles}>Teléfono</label>
+                      <label htmlFor="admin1_phone" className={labelStyles}>Teléfono</label>
                       <input
-                        {...register('representative_phone')}
+                        {...register('admin1_phone')}
                         type="tel"
-                        id="representative_phone"
-                        placeholder="0999123456"
+                        id="admin1_phone"
+                        placeholder="0999654321"
                         className={`${inputStyles} ${inputNormalStyles}`}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label htmlFor="representative_email" className={labelStyles}>Email</label>
+                      <label htmlFor="admin1_email" className={labelStyles}>Email</label>
                       <input
-                        {...register('representative_email')}
+                        {...register('admin1_email')}
                         type="email"
-                        id="representative_email"
-                        placeholder="representante@club.com"
-                        className={`${inputStyles} ${errors.representative_email ? inputErrorStyles : inputNormalStyles}`}
+                        id="admin1_email"
+                        placeholder="admin1@club.com"
+                        className={`${inputStyles} ${errors.admin1_email ? inputErrorStyles : inputNormalStyles}`}
                       />
-                      {errors.representative_email && (
-                        <p className="text-sm text-red-700 font-medium">{errors.representative_email.message}</p>
+                      {errors.admin1_email && (
+                        <p className="text-sm text-red-700 font-medium">{errors.admin1_email.message}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Administrator 2 */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">
+                    Administrador 2
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="admin2_name" className={labelStyles}>Nombre</label>
+                      <input
+                        {...register('admin2_name')}
+                        type="text"
+                        id="admin2_name"
+                        placeholder="Carlos López"
+                        className={`${inputStyles} ${inputNormalStyles}`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="admin2_phone" className={labelStyles}>Teléfono</label>
+                      <input
+                        {...register('admin2_phone')}
+                        type="tel"
+                        id="admin2_phone"
+                        placeholder="0999987654"
+                        className={`${inputStyles} ${inputNormalStyles}`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="admin2_email" className={labelStyles}>Email</label>
+                      <input
+                        {...register('admin2_email')}
+                        type="email"
+                        id="admin2_email"
+                        placeholder="admin2@club.com"
+                        className={`${inputStyles} ${errors.admin2_email ? inputErrorStyles : inputNormalStyles}`}
+                      />
+                      {errors.admin2_email && (
+                        <p className="text-sm text-red-700 font-medium">{errors.admin2_email.message}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Administrator 3 */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">
+                    Administrador 3
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="admin3_name" className={labelStyles}>Nombre</label>
+                      <input
+                        {...register('admin3_name')}
+                        type="text"
+                        id="admin3_name"
+                        placeholder="Ana Rodríguez"
+                        className={`${inputStyles} ${inputNormalStyles}`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="admin3_phone" className={labelStyles}>Teléfono</label>
+                      <input
+                        {...register('admin3_phone')}
+                        type="tel"
+                        id="admin3_phone"
+                        placeholder="0999456789"
+                        className={`${inputStyles} ${inputNormalStyles}`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="admin3_email" className={labelStyles}>Email</label>
+                      <input
+                        {...register('admin3_email')}
+                        type="email"
+                        id="admin3_email"
+                        placeholder="admin3@club.com"
+                        className={`${inputStyles} ${errors.admin3_email ? inputErrorStyles : inputNormalStyles}`}
+                      />
+                      {errors.admin3_email && (
+                        <p className="text-sm text-red-700 font-medium">{errors.admin3_email.message}</p>
                       )}
                     </div>
                   </div>
@@ -548,7 +768,7 @@ const ClubModal: React.FC<ClubModalProps> = ({ isOpen, onClose, onSave, club, le
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               Cancelar

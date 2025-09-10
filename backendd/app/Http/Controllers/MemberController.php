@@ -316,7 +316,7 @@ class MemberController extends Controller
                     ->orderBy('province')
                     ->orderBy('city')
                     ->get(['province', 'city']),
-                'tt_clubs' => DB::table('tt_club_references')
+                'tt_clubs' => DB::table('tt_clubs_reference')
                     ->where('is_active', true)
                     ->orderBy('province')
                     ->orderBy('city')
